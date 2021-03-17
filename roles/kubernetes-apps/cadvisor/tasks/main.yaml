@@ -1,0 +1,77 @@
+---
+- name: Check all masters are node or not
+  set_fact:
+    masters_are_not_tainted: "{{ groups['kube-node'] | intersect(groups['kube-master']) == groups['kube-master'] }}"
+
+- name: Cadvisor | Delete addon dir
+  file:
+    path: "{{ kube_config_dir }}/addons/cadvisor"
+    state: absent
+  when:
+    - inventory_hostname == groups['kube-master'][0]
+  tags:
+    - upgrade
+
+- name: Cadvisor | Create addon dir
+  file:
+    path: "{{ kube_config_dir }}/addons/cadvisor"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  when:
+    - inventory_hostname == groups['kube-master'][0]
+
+- name: Cadvisor | Templates list
+  set_fact:
+    cadvisor_templates:
+      - {
+          name: namespace,
+          file: namespace.yaml,
+          type: ns,
+        }
+      - {
+          name: cluserrolebinding,
+          file: cluserrolebinding.yaml,
+          type: clusterrolebinding,
+        }
+      - {
+          name: cluserrole,
+          file: cluserrole.yaml,
+          type: cr,
+        }
+      - {
+          name: serviceaccount,
+          file: serviceaccount.yaml,
+          type: sa,
+        }
+      - {
+          name: daemonset,
+          file: daemonset.yaml,
+          type: deploy,
+        }
+      - {
+          name: podsecuritypolicy,
+          file: podsecuritypolicy.yaml,
+          type: podsecuritypolicies
+        }
+
+- name: Cadvisor | Create manifests
+  template:
+    src: "{{ item.file }}.j2"
+    dest: "{{ kube_config_dir }}/addons/cadvisor/{{ item.file }}"
+  with_items: "{{ cadvisor_templates }}"
+  register: cadvisor_manifests
+  when:
+    - inventory_hostname == groups['kube-master'][0]
+
+- name: Cadvisor | Apply manifests
+  kube:
+    name: "{{ item.item.name }}"
+    kubectl: "{{ bin_dir }}/kubectl"
+    resource: "{{ item.item.type }}"
+    filename: "{{ kube_config_dir }}/addons/cadvisor/{{ item.item.file }}"
+    state: "latest"
+  with_items: "{{ cadvisor_manifests.results }}"
+  when:
+    - inventory_hostname == groups['kube-master'][0]

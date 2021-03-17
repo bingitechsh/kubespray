@@ -29,6 +29,22 @@ dependencies:
       - apps
       - metrics_server
 
+  - role: kubernetes-apps/kube_state_metrics
+    when:
+      - kube_state_metrics_enabled
+      - inventory_hostname == groups['kube-master'][0]
+    tags:
+      - apps
+      - kube_state_metrics
+
+  - role: kubernetes-apps/cadvisor
+    when:
+      - cadvisor_enabled
+      - inventory_hostname == groups['kube-master'][0]
+    tags:
+      - apps
+      - cadvisor
+
   - role: kubernetes-apps/csi_driver/csi_crd
     when:
       - cinder_csi_enabled

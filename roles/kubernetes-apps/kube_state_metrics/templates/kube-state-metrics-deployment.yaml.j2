@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    k8s-app: kube-state-metrics
+  name: kube-state-metrics
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: kube-state-metrics
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        k8s-app: kube-state-metrics
+    spec:
+      serviceAccountName: kube-state-metrics
+      hostNetwork: true
+      containers:
+        - name: kube-state-metrics
+          image: {{ kube_state_metrics_image_repo }}:{{ kube_state_metrics_image_tag }}
+          command: ["/kube-state-metrics"]
+          args: ["--port={{ kube_state_metrics_port }}", "--telemetry-port={{ kube_state_metrics_telemetry_port }}"]
+          ports:
+            - name: http-metrics
+              containerPort: {{ kube_state_metrics_port }}
+            - name: telemetry
+              containerPort: {{ kube_state_metrics_telemetry_port }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ kube_state_metrics_port }}
+            initialDelaySeconds: 5
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ kube_state_metrics_port }}
+            initialDelaySeconds: 5
+            timeoutSeconds: 5

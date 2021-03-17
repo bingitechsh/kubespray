@@ -1,0 +1,5 @@
+---
+kube_state_metrics_image_repo: "quay.io/coreos/kube-state-metrics"
+kube_state_metrics_image_tag: "v1.7.2"
+kube_state_metrics_port: "28080"
+kube_state_metrics_telemetry_port: "28081"

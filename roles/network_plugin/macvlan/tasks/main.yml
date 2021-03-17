@@ -1,13 +1,18 @@
 ---
-- name: Macvlan | Retrieve Pod Cidr
-  command: "{{ bin_dir }}/kubectl get nodes {{ kube_override_hostname | default(inventory_hostname) }} -o jsonpath='{.spec.podCIDR}'"
-  changed_when: false
-  register: node_pod_cidr_cmd
-  delegate_to: "{{ groups['kube-master'][0] }}"
+# - name: Macvlan | Retrieve Pod Cidr
+#   command: "{{ bin_dir }}/kubectl get nodes {{ kube_override_hostname | default(inventory_hostname) }} -o jsonpath='{.spec.podCIDR}'"
+#   changed_when: false
+#   register: node_pod_cidr_cmd
+#   delegate_to: "{{ groups['kube-master'][0] }}"
 
-- name: Macvlan | set node_pod_cidr
-  set_fact:
-    node_pod_cidr={{ node_pod_cidr_cmd.stdout }}
+# - name: Macvlan | set node_pod_cidr
+#   set_fact:
+#     node_pod_cidr={{ node_pod_cidr_cmd.stdout }}
+
+- name: Macvlan | Check node pod cidr is defined
+  fail:
+    msg: "Node Pod CIDR is not defined in host vars"
+  when: node_pod_cidr is not defined
 
 - name: Macvlan | Retrieve default gateway network interface
   become: false
