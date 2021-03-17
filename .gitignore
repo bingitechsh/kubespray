@@ -19,6 +19,7 @@ vagrant/
 # Ansible inventory
 inventory/*
 !inventory/local
+!inventory/bingcluster
 !inventory/sample
 inventory/*/artifacts/
 
