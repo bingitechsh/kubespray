@@ -55,7 +55,7 @@ etcd_version: v3.4.3
 
 # gcr and kubernetes image repo define
 gcr_image_repo: "gcr.io"
-kube_image_repo: "k8s.gcr.io"
+kube_image_repo: "registry.aliyuncs.com/google_containers"
 
 # docker image repo define
 docker_image_repo: "docker.io"
